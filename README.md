@@ -1,5 +1,5 @@
 ## Purpose
-> This script will help you automate the process of merging branches in one repo or in several repos in one shot if and only if all repos have the same branches names.
+> This script automates the process of merging branches in a single repository or across multiple repositories in one go, provided that all repositories have the same branch names.
 
 ## Usage
 > To merge two branches on the same repo in the current directory:
@@ -16,7 +16,7 @@
 >
 > ### ==> Note: write the branch name without 'origin/'. 
 
-## What does this script specificlly do?
+## What does this script specifically do?
 > - Excluding undesired directories if [-a] option is applied
 >
 > - Filter Directories that do not have ".git" directory "Not a Repository"
