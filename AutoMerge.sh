@@ -41,7 +41,7 @@ log() {
     echo -e "$(date +"%Y-%m-%d %H:%M:%S") - $1"
 }
 
-# Function to log errors (Red in terminal)
+# Function to log errors in red
 log_error() {
     echo -e "\e[31m$(date +"%Y-%m-%d %H:%M:%S") - ERROR: $1\e[0m" >&2
 }
@@ -83,11 +83,21 @@ ensure_branch_exists() {
     return 0
 }
 
+# Function to check if there are uncommitted changes
+needs_stash() {
+    if [[ -n $(git status --porcelain) ]]; then
+        return 0  # Yes, changes need to be stashed
+    fi
+    return 1  # No, working directory is clean
+}
+
 # Function to merge branches in a given repository
 merge_branch() {
     local repo_path="$1"
     local from_branch="$2"
     local to_branch="$3"
+    local original_branch
+    local stash_applied=false
 
     log "Processing repository: $repo_path"
     cd "$repo_path" || { log_error "Failed to access $repo_path"; return; }
@@ -99,8 +109,18 @@ merge_branch() {
         return
     fi
 
+    # Store the current branch
+    original_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    # Stash changes if necessary
+    if needs_stash; then
+        log "Stashing uncommitted changes in '$original_branch'"
+        git stash push -m "Auto-stash before merge" 2>&1
+        stash_applied=true
+    fi
+
     # Fetch latest changes
-    if ! git fetch origin 2>&1 ; then
+    if ! git fetch origin 2>&1; then
         log_error "Failed to fetch origin in $repo_path"
         cd - > /dev/null
         return
@@ -110,15 +130,15 @@ merge_branch() {
     ensure_branch_exists "$from_branch" || { cd - > /dev/null; return; }
     ensure_branch_exists "$to_branch" || { cd - > /dev/null; return; }
 
-    # Switch to target branch
-    if ! git checkout "$to_branch" 2>&1 ; then
+    # Checkout target branch
+    if ! git checkout "$to_branch" 2>&1; then
         log_error "Failed to checkout branch '$to_branch'"
         cd - > /dev/null
         return
     fi
 
     # Pull latest changes
-    if ! git pull origin "$to_branch" 2>&1 ; then
+    if ! git pull origin "$to_branch" 2>&1; then
         log_error "Failed to pull latest changes for '$to_branch'"
         cd - > /dev/null
         return
@@ -135,7 +155,7 @@ merge_branch() {
         cd - > /dev/null
         return
     elif [ $merge_status -ne 0 ]; then
-        log_error "Merge failed in $repo_path. See log file for details."
+        log_error "Merge failed in $repo_path."
         cd - > /dev/null
         return
     else
@@ -143,19 +163,25 @@ merge_branch() {
     fi
 
     # Push changes
-    if ! git push origin "$to_branch" 2>&1 ; then
+    if ! git push origin "$to_branch" 2>&1; then
         log_error "Failed to push '$to_branch' in $repo_path"
         cd - > /dev/null
         return
     fi
 
     log "Successfully pushed '$to_branch' to origin"
+
+    # Switch back to original branch
+    git checkout "$original_branch" 2>&1 || log_error "Failed to switch back to '$original_branch'"
+
+    # Pop the stash if it was applied
+    if $stash_applied; then
+        log "Restoring stashed changes in '$original_branch'"
+        git stash pop 2>&1 || log_error "Failed to apply stashed changes"
+    fi
+
     cd - > /dev/null  # Return to the previous directory
 }
-
-
-#displayBanner
-displayBanner
 
 # Parse command-line arguments
 apply_all=false
@@ -167,7 +193,7 @@ while [[ $# -gt 0 ]]; do
         -a) apply_all=true ;;
         -from) from_branch="$2"; shift ;;
         -to) to_branch="$2"; shift ;;
-        *) usage ;;
+        *) log "Invalid argument: $1\n"; usage;;
     esac
     shift
 done
