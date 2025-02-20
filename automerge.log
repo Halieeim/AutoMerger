@@ -65,3 +65,18 @@ Already up to date.
 Everything up-to-date
 2025-02-20 14:35:36 - Successfully pushed 'cayan' to origin
 2025-02-20 14:35:36 - Automerge process completed!
+2025-02-20 14:40:37 - Starting automerge process...
+2025-02-20 14:40:37 - From: cayan | To: release | Apply to all: false
+2025-02-20 14:40:37 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+error: Your local changes to the following files would be overwritten by checkout:
+	automerge.log
+Please commit your changes or stash them before you switch branches.
+Aborting
+From https://github.com/Halieeim/Testing_Automated_MERGE
+ * branch            release    -> FETCH_HEAD
+Already up to date.
+Already up to date.
+2025-02-20 14:40:39 - No new changes to merge. Proceeding with push.
+Everything up-to-date
+2025-02-20 14:40:43 - Successfully pushed 'release' to origin
+2025-02-20 14:40:43 - Automerge process completed!
