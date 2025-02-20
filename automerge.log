@@ -15,3 +15,53 @@
 2025-02-20 11:54:54 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
 2025-02-20 11:55:02 - Error: Branch 'remotes/origin/release' does not exist locally or remotely!
 2025-02-20 11:55:02 - Automerge process completed!
+2025-02-20 14:19:06 - Usage:
+2025-02-20 14:19:06 -   C:\merged_partition_content\MyWorkSpace\Automation\AutoMerge.sh -from <source_branch> -to <target_branch>         # Merge in current repo
+2025-02-20 14:19:06 -   C:\merged_partition_content\MyWorkSpace\Automation\AutoMerge.sh -a -from <source_branch> -to <target_branch>     # Merge in all repos in current directory
+2025-02-20 14:20:04 - Starting automerge process...
+2025-02-20 14:20:04 - From: origin/cayan | To: release | Apply to all: false
+2025-02-20 14:20:04 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+[31m2025-02-20 14:20:06 - ERROR: Branch 'origin/cayan' does not exist locally or remotely![0m
+2025-02-20 14:20:06 - Automerge process completed!
+2025-02-20 14:20:29 - Starting automerge process...
+2025-02-20 14:20:29 - From: cayan | To: release | Apply to all: false
+2025-02-20 14:20:29 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+M	automerge.log
+Switched to branch 'release'
+From https://github.com/Halieeim/Testing_Automated_MERGE
+ * branch            release    -> FETCH_HEAD
+Already up to date.
+Updating d600ed1..ccc4f13
+Fast-forward
+ AutoMerge.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[31m2025-02-20 14:20:32 - ERROR: Merge failed in /c/merged_partition_content/MyWorkSpace/Automation. See log file for details.[0m
+2025-02-20 14:20:32 - Automerge process completed!
+2025-02-20 14:34:42 - Starting automerge process...
+2025-02-20 14:34:42 - From: release | To: cayan | Apply to all: false
+2025-02-20 14:34:42 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+M	AutoMerge.sh
+M	automerge.log
+Switched to branch 'cayan'
+From https://github.com/Halieeim/Testing_Automated_MERGE
+ * branch            cayan      -> FETCH_HEAD
+Already up to date.
+Already up to date.
+2025-02-20 14:34:44 - No new changes to merge. Proceeding with push.
+Everything up-to-date
+2025-02-20 14:34:47 - Successfully pushed 'cayan' to origin
+2025-02-20 14:34:47 - Automerge process completed!
+2025-02-20 14:35:29 - Starting automerge process...
+2025-02-20 14:35:29 - From: release | To: cayan | Apply to all: false
+2025-02-20 14:35:29 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+M	AutoMerge.sh
+M	automerge.log
+Already on 'cayan'
+From https://github.com/Halieeim/Testing_Automated_MERGE
+ * branch            cayan      -> FETCH_HEAD
+Already up to date.
+Already up to date.
+2025-02-20 14:35:32 - No new changes to merge. Proceeding with push.
+Everything up-to-date
+2025-02-20 14:35:36 - Successfully pushed 'cayan' to origin
+2025-02-20 14:35:36 - Automerge process completed!

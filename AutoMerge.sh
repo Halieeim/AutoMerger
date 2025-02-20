@@ -91,6 +91,7 @@ merge_branch() {
 
     # Merge from remote branch explicitly
     merge_output=$(git merge "origin/$from_branch" 2>&1 | tee -a "$LOG_FILE")
+    merge_status=${PIPESTATUS[0]}
     
     if echo "$merge_output" | grep -q "Already up to date"; then
         log "No new changes to merge. Proceeding with push."
@@ -98,7 +99,7 @@ merge_branch() {
         log_error "Merge conflict detected in $repo_path. Manual resolution required."
         cd - > /dev/null
         return
-    elif [ $? -ne 0 ]; then
+    elif [ $merge_status -ne 0 ]; then
         log_error "Merge failed in $repo_path. See log file for details."
         cd - > /dev/null
         return
