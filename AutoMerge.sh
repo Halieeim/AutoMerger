@@ -183,6 +183,9 @@ merge_branch() {
     cd - > /dev/null  # Return to the previous directory
 }
 
+#Diplays the banner
+displayBanner
+
 # Parse command-line arguments
 apply_all=false
 from_branch=""
