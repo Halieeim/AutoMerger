@@ -4,7 +4,12 @@ LOG_FILE="automerge.log"
 
 # Function to log messages (both terminal & file)
 log() {
-    echo "$(date +"%Y-%m-%d %H:%M:%S") - $1" | tee -a "$LOG_FILE"
+    echo -e "$(date +"%Y-%m-%d %H:%M:%S") - $1" | tee -a "$LOG_FILE"
+}
+
+# Function to log errors (Red in terminal)
+log_error() {
+    echo -e "\e[31m$(date +"%Y-%m-%d %H:%M:%S") - ERROR: $1\e[0m" | tee -a "$LOG_FILE" >&2
 }
 
 # Function to display usage
@@ -31,9 +36,12 @@ ensure_branch_exists() {
     if ! branch_exists_locally "$branch"; then
         if branch_exists_remotely "$branch"; then
             log "Fetching remote branch '$branch'..."
-            git fetch origin "$branch":"$branch" || { log "Error: Failed to fetch branch '$branch'"; return 1; }
+            if ! git fetch origin "$branch":"$branch" 2>&1 | tee -a "$LOG_FILE"; then
+                log_error "Failed to fetch branch '$branch'"
+                return 1
+            fi
         else
-            log "Error: Branch '$branch' does not exist locally or remotely!"
+            log_error "Branch '$branch' does not exist locally or remotely!"
             return 1
         fi
     fi
@@ -47,44 +55,68 @@ merge_branch() {
     local to_branch="$3"
 
     log "Processing repository: $repo_path"
-    cd "$repo_path" || { log "Error: Failed to access $repo_path"; return; }
+    cd "$repo_path" || { log_error "Failed to access $repo_path"; return; }
 
     # Check if it's a Git repository
     if [ ! -d ".git" ]; then
-        log "Skipping: $repo_path is not a Git repository"
+        log_error "Skipping: $repo_path is not a Git repository"
         cd - > /dev/null
         return
     fi
 
     # Fetch latest changes
-    git fetch origin || { log "Error: Failed to fetch origin in $repo_path"; cd - > /dev/null; return; }
-
-    # Ensure source and target branches exist
-    ensure_branch_exists "$from_branch" || { cd - > /dev/null; return; }
-    ensure_branch_exists "$to_branch" || { cd - > /dev/null; return; }
-
-    # Switch to target branch
-    git checkout "$to_branch" || { log "Error: Failed to checkout branch '$to_branch'"; cd - > /dev/null; return; }
-    git pull origin "$to_branch" || { log "Error: Failed to pull latest changes for '$to_branch'"; cd - > /dev/null; return; }
-
-    # Merge branches
-    if git merge "$from_branch" --no-ff -m "Auto-merged $from_branch into $to_branch"; then
-        log "Successfully merged '$from_branch' into '$to_branch'"
-    else
-        log "Error: Merge conflict or failure in $repo_path"
+    if ! git fetch origin 2>&1 | tee -a "$LOG_FILE"; then
+        log_error "Failed to fetch origin in $repo_path"
         cd - > /dev/null
         return
     fi
 
-    # Push changes
-    if git push origin "$to_branch"; then
-        log "Successfully pushed '$to_branch' to origin"
-    else
-        log "Error: Failed to push '$to_branch' in $repo_path"
+    # Ensure source and target branches exist remotely
+    ensure_branch_exists "$from_branch" || { cd - > /dev/null; return; }
+    ensure_branch_exists "$to_branch" || { cd - > /dev/null; return; }
+
+    # Switch to target branch
+    if ! git checkout "$to_branch" 2>&1 | tee -a "$LOG_FILE"; then
+        log_error "Failed to checkout branch '$to_branch'"
+        cd - > /dev/null
+        return
     fi
 
+    # Pull latest changes
+    if ! git pull origin "$to_branch" 2>&1 | tee -a "$LOG_FILE"; then
+        log_error "Failed to pull latest changes for '$to_branch'"
+        cd - > /dev/null
+        return
+    fi
+
+    # Merge from remote branch explicitly
+    merge_output=$(git merge "origin/$from_branch" --no-ff -m "Auto-merged origin/$from_branch into $to_branch" 2>&1 | tee -a "$LOG_FILE")
+    
+    if echo "$merge_output" | grep -q "Already up to date"; then
+        log "No new changes to merge. Proceeding with push."
+    elif echo "$merge_output" | grep -q "CONFLICT"; then
+        log_error "Merge conflict detected in $repo_path. Manual resolution required."
+        cd - > /dev/null
+        return
+    elif [ $? -ne 0 ]; then
+        log_error "Merge failed in $repo_path. See log file for details."
+        cd - > /dev/null
+        return
+    else
+        log "Successfully merged 'origin/$from_branch' into '$to_branch'"
+    fi
+
+    # Push changes
+    if ! git push origin "$to_branch" 2>&1 | tee -a "$LOG_FILE"; then
+        log_error "Failed to push '$to_branch' in $repo_path"
+        cd - > /dev/null
+        return
+    fi
+
+    log "Successfully pushed '$to_branch' to origin"
     cd - > /dev/null  # Return to the previous directory
 }
+
 
 # Parse command-line arguments
 apply_all=false

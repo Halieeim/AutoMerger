@@ -1,0 +1,17 @@
+2025-02-20 11:30:14 - Starting automerge process...
+2025-02-20 11:30:14 - From: release | To: cayan | Apply to all: false
+2025-02-20 11:30:15 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+2025-02-20 11:30:17 - Fetching remote branch 'cayan'...
+2025-02-20 11:30:20 - Successfully merged 'release' into 'cayan'
+2025-02-20 11:30:27 - Successfully pushed 'cayan' to origin
+2025-02-20 11:30:27 - Automerge process completed!
+2025-02-20 11:53:38 - Starting automerge process...
+2025-02-20 11:53:38 - From: origin/release | To: cayan | Apply to all: false
+2025-02-20 11:53:38 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+2025-02-20 11:53:51 - Error: Branch 'origin/release' does not exist locally or remotely!
+2025-02-20 11:53:51 - Automerge process completed!
+2025-02-20 11:54:54 - Starting automerge process...
+2025-02-20 11:54:54 - From: remotes/origin/release | To: cayan | Apply to all: false
+2025-02-20 11:54:54 - Processing repository: /c/merged_partition_content/MyWorkSpace/Automation
+2025-02-20 11:55:02 - Error: Branch 'remotes/origin/release' does not exist locally or remotely!
+2025-02-20 11:55:02 - Automerge process completed!
