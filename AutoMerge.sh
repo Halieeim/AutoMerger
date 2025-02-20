@@ -96,7 +96,7 @@ merge_branch() {
         log_error "Merge conflict detected in $repo_path. Manual resolution required."
         cd - > /dev/null
         return
-    elif [ $merge_status -ne 0 ]; then
+    elif [ $? -ne 0 ]; then
         log_error "Merge failed in $repo_path. See log file for details."
         cd - > /dev/null
         return
