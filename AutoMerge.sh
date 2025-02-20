@@ -1,15 +1,13 @@
 #!/bin/bash
 
-LOG_FILE="automerge.log"
-
 # Function to log messages (both terminal & file)
 log() {
-    echo -e "$(date +"%Y-%m-%d %H:%M:%S") - $1" | tee -a "$LOG_FILE"
+    echo -e "$(date +"%Y-%m-%d %H:%M:%S") - $1"
 }
 
 # Function to log errors (Red in terminal)
 log_error() {
-    echo -e "\e[31m$(date +"%Y-%m-%d %H:%M:%S") - ERROR: $1\e[0m" | tee -a "$LOG_FILE" >&2
+    echo -e "\e[31m$(date +"%Y-%m-%d %H:%M:%S") - ERROR: $1\e[0m" >&2
 }
 
 # Function to display usage
@@ -36,7 +34,7 @@ ensure_branch_exists() {
     if ! branch_exists_locally "$branch"; then
         if branch_exists_remotely "$branch"; then
             log "Fetching remote branch '$branch'..."
-            if ! git fetch origin "$branch":"$branch" 2>&1 | tee -a "$LOG_FILE"; then
+            if ! git fetch origin "$branch":"$branch" 2>&1 ; then
                 log_error "Failed to fetch branch '$branch'"
                 return 1
             fi
@@ -65,7 +63,7 @@ merge_branch() {
     fi
 
     # Fetch latest changes
-    if ! git fetch origin 2>&1 | tee -a "$LOG_FILE"; then
+    if ! git fetch origin 2>&1 ; then
         log_error "Failed to fetch origin in $repo_path"
         cd - > /dev/null
         return
@@ -76,22 +74,21 @@ merge_branch() {
     ensure_branch_exists "$to_branch" || { cd - > /dev/null; return; }
 
     # Switch to target branch
-    if ! git checkout "$to_branch" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! git checkout "$to_branch" 2>&1 ; then
         log_error "Failed to checkout branch '$to_branch'"
         cd - > /dev/null
         return
     fi
 
     # Pull latest changes
-    if ! git pull origin "$to_branch" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! git pull origin "$to_branch" 2>&1 ; then
         log_error "Failed to pull latest changes for '$to_branch'"
         cd - > /dev/null
         return
     fi
 
     # Merge from remote branch explicitly
-    merge_output=$(git merge "origin/$from_branch" 2>&1 | tee -a "$LOG_FILE")
-    merge_status=${PIPESTATUS[0]}
+    merge_output=$(git merge "origin/$from_branch" 2>&1)
     
     if echo "$merge_output" | grep -q "Already up to date"; then
         log "No new changes to merge. Proceeding with push."
@@ -108,7 +105,7 @@ merge_branch() {
     fi
 
     # Push changes
-    if ! git push origin "$to_branch" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! git push origin "$to_branch" 2>&1 ; then
         log_error "Failed to push '$to_branch' in $repo_path"
         cd - > /dev/null
         return
