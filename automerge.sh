@@ -50,8 +50,9 @@ log_error() {
 usage() {
     scriptName=$(basename "$0")
     log "Usage:"
-    log "  $scriptName -from <source_branch> -to <target_branch>         # Merge in current repo"
-    log "  $scriptName -a -from <source_branch> -to <target_branch>     # Merge in all repos in current directory"
+    log "  $scriptName -from <source_branch> -to <target_branch>          # Merge in current repo"
+    log "  $scriptName -a -from <source_branch> -to <target_branch>      # Merge in all repos in current directory"
+    log "  $scriptName -a -from <source_branch> -to <target_branch> -ex dir1,dir2  # Exclude specific directories"
     exit 1
 }
 
@@ -63,6 +64,17 @@ branch_exists_locally() {
 # Function to check if a branch exists remotely
 branch_exists_remotely() {
     git ls-remote --exit-code --heads origin "$1" > /dev/null
+}
+
+# Function to check if a directory is in the exclusion list
+is_excluded() {
+    local dir_name="$1"
+    for excluded in "${exclude_dirs[@]}"; do
+        if [[ "$dir_name" == "$excluded" ]]; then
+            return 0  # Yes, this directory is excluded
+        fi
+    done
+    return 1  # No, this directory is not excluded
 }
 
 # Function to ensure a branch exists locally (fetch if needed)
@@ -190,12 +202,15 @@ displayBanner
 apply_all=false
 from_branch=""
 to_branch=""
+exclude_dirs=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -a) apply_all=true ;;
         -from) from_branch="$2"; shift ;;
         -to) to_branch="$2"; shift ;;
+        -ex) IFS=',' read -r -a exclude_dirs <<< "$2"; shift ;;
+        -h|--help) usage ;;
         *) log "Invalid argument: $1\n"; usage;;
     esac
     shift
@@ -207,13 +222,20 @@ if [[ -z "$from_branch" || -z "$to_branch" ]]; then
 fi
 
 log "Starting automerge process..."
-log "From: $from_branch | To: $to_branch | Apply to all: $apply_all"
+log "From: $from_branch | To: $to_branch | Apply to all: $apply_all | Excluded: ${exclude_dirs[*]}"
 
 if [[ "$apply_all" = true ]]; then
     # Detect all Git repositories in the current directory
     for repo in */; do
+        repoName=$(basename "$repo")
+        if is_excluded $repoName; then
+            log "Skipping excluded directory: $repoName"
+            continue
+        fi
         if [ -d "$repo/.git" ]; then
             merge_branch "$repo" "$from_branch" "$to_branch"
+        else
+            log "Skipping non-Git directory: $repoName"
         fi
     done
 else
