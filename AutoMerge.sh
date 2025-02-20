@@ -90,7 +90,7 @@ merge_branch() {
     fi
 
     # Merge from remote branch explicitly
-    merge_output=$(git merge "origin/$from_branch" --no-ff -m "Auto-merged origin/$from_branch into $to_branch" 2>&1 | tee -a "$LOG_FILE")
+    merge_output=$(git merge "origin/$from_branch" 2>&1 | tee -a "$LOG_FILE")
     
     if echo "$merge_output" | grep -q "Already up to date"; then
         log "No new changes to merge. Proceeding with push."
