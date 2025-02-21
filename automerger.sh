@@ -157,7 +157,7 @@ merge_branch() {
     fi
 
     # Merge from remote branch explicitly
-    merge_output=$(git merge "origin/$from_branch" 2>&1)
+    merge_output=$(git merge --stat --verbose "origin/$from_branch" 2>&1)
     merge_status=${PIPESTATUS[0]}
     
     if echo "$merge_output" | grep -q "Already up to date"; then
