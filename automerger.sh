@@ -171,7 +171,8 @@ merge_branch() {
         cd - > /dev/null
         return
     else
-        log "Successfully merged 'origin/$from_branch' into '$to_branch'"
+        log "$merge_output
+        Successfully merged 'origin/$from_branch' into '$to_branch'"
     fi
 
     # Push changes
