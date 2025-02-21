@@ -4,15 +4,15 @@
 ## Usage
 > To merge two branches on the same repo in the current directory:
 > 
-> ```automerge.sh -from <source_branch> -to <target_branch>```
+> ```automerger.sh -from <source_branch> -to <target_branch>```
 >
 > To merge two branches on all repositories in the current directory:
 >
-> ```automerge.sh -a -from <source_branch> -to <target_branch>```
+> ```automerger.sh -a -from <source_branch> -to <target_branch>```
 >
 > To merge two branches on all repositories in the current directory and exclude some directories:
 >
-> ```automerge.sh -a -from <source_branch> -to <target_branch> -ex dir1,dir2```
+> ```automerger.sh -a -from <source_branch> -to <target_branch> -ex dir1,dir2```
 >
 > #### ==> Note: write the branch name without 'origin/'.
 >
