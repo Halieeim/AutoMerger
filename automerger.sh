@@ -46,6 +46,11 @@ log_error() {
     echo -e "\e[31m$(date +"%Y-%m-%d %H:%M:%S") - ERROR: $1\e[0m" >&2
 }
 
+# Function to log success in green
+log_success() {
+    echo -e "\e[32m$(date +"%Y-%m-%d %H:%M:%S") - SUCCESS: $1\e[0m"
+}
+
 # Function to display usage
 usage() {
     scriptName=$(basename "$0")
@@ -171,8 +176,8 @@ merge_branch() {
         cd - > /dev/null
         return
     else
-        log "$merge_output
-        Successfully merged 'origin/$from_branch' into '$to_branch'"
+        log "$merge_output";
+        log "Successfully merged 'origin/$from_branch' into '$to_branch'"
     fi
 
     # Push changes
