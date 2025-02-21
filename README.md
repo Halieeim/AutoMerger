@@ -14,21 +14,27 @@
 >
 > ```automerge.sh -a -from <source_branch> -to <target_branch> -ex dir1,dir2```
 >
-> ### ==> Note: write the branch name without 'origin/'. 
+> #### ==> Note: write the branch name without 'origin/'.
+>
+> ## In Windows
+>   
+>> - Add the FOLDER path of the script in the environment variables in ```path```
+>>
+>> - Open Git Bash terminal so you can execute it, and run any of the above commands
 
 ## What does this script specifically do?
-> - Excluding undesired directories if [-a] option is applied
+> - Excludes undesired directories if [-a] option is applied
 >
-> - Filter Directories that do not have ".git" directory "Not a Repository"
+> - Filters Directories that do not have ".git" directory "Not a Repository"
 >
 > - If the current branch has uncommited changes, the script will stash these changes before checking out and after the merge process is completed, it checks out back to that branch and pop the stashed changes
 > 
-> - Validating branches locally & remotely
+> - Validates branches locally & remotely
 >
-> - Fetching origin & pull updates before merging
+> - Fetches origin & pull updates before merging
 >
-> - Merging the remote branch of the source branch to the local branch of the target branch, and checking the merge status
+> - Merges the remote branch of the source branch to the local branch of the target branch, and checks the merge status
 >
-> - Then, push the merged changes
+> - Then, pushes the merged changes
 >
 > - Logs for each step for better debugging
