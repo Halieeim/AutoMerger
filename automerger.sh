@@ -121,6 +121,10 @@ merge_branch() {
         return
     fi
 
+    # Ensure source and target branches exist remotely
+    ensure_branch_exists "$from_branch" || { cd - > /dev/null; return; }
+    ensure_branch_exists "$to_branch" || { cd - > /dev/null; return; }
+
     # Store the current branch
     original_branch=$(git rev-parse --abbrev-ref HEAD)
 
@@ -137,10 +141,6 @@ merge_branch() {
         cd - > /dev/null
         return
     fi
-
-    # Ensure source and target branches exist remotely
-    ensure_branch_exists "$from_branch" || { cd - > /dev/null; return; }
-    ensure_branch_exists "$to_branch" || { cd - > /dev/null; return; }
 
     # Checkout target branch
     if ! git checkout "$to_branch" 2>&1; then
