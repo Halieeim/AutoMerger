@@ -177,7 +177,7 @@ merge_branch() {
         return
     else
         log "$merge_output";
-        log "Successfully merged 'origin/$from_branch' into '$to_branch'"
+        log_success "Successfully merged 'origin/$from_branch' into '$to_branch'"
     fi
 
     # Push changes
@@ -187,7 +187,7 @@ merge_branch() {
         return
     fi
 
-    log "Successfully pushed '$to_branch' to origin"
+    log_success "Successfully pushed '$to_branch' to origin"
 
     # Switch back to original branch
     git checkout "$original_branch" 2>&1 || log_error "Failed to switch back to '$original_branch'"
