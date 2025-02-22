@@ -1,65 +1,7 @@
 #!/bin/bash
 
-banner="
- .S_SSSs     .S       S.   sdSS_SSSSSSbs    sSSs_sSSs                      
-.SS~SSSSS   .SS       SS.  YSSS~S%SSSSSP   d%%SP~YS%%b                     
-S%S   SSSS  S%S       S%S       S%S       d%S'     \`S%b                    
-S%S    S%S  S%S       S%S       S%S       S%S       S%S                    
-S%S SSSS%S  S&S       S&S       S&S       S&S       S&S                    
-S&S  SSS%S  S&S       S&S       S&S       S&S       S&S                    
-S&S    S&S  S&S       S&S       S&S       S&S       S&S                    
-S&S    S&S  S&S       S&S       S&S       S&S       S&S                    
-S*S    S&S  S*b       d*S       S*S       S*b       d*S                    
-S*S    S*S  S*S.     .S*S       S*S       S*S.     .S*S                    
-S*S    S*S   SSSbs_sdSSS        S*S        SSSbs_sdSSS                     
-SSS    S*S    YSSP~YSSY         S*S         YSSP~YSSY                      
-       SP                       SP                                         
-       Y                        Y                                          
-                                                                           
-             .S_SsS_S.     sSSs   .S_sSSs      sSSSSs    sSSs   .S_sSSs    
-            .SS~S*S~SS.   d%%SP  .SS~YS%%b    d%%%%SP   d%%SP  .SS~YS%%b   
-            S%S \`Y' S%S  d%S'    S%S   \`S%b  d%S'      d%S'    S%S   \`S%b  
-            S%S     S%S  S%S     S%S    S%S  S%S       S%S     S%S    S%S  
-            S%S     S%S  S&S     S%S    d*S  S&S       S&S     S%S    d*S  
-            S&S     S&S  S&S_Ss  S&S   .S*S  S&S       S&S_Ss  S&S   .S*S  
-            S&S     S&S  S&S~SP  S&S_sdSSS   S&S       S&S~SP  S&S_sdSSS   
-            S&S     S&S  S&S     S&S~YSY%b   S&S sSSs  S&S     S&S~YSY%b   
-            S*S     S*S  S*b     S*S   \`S%b  S*b \`S%%  S*b     S*S   \`S%b  
-            S*S     S*S  S*S.    S*S    S%S  S*S   S%  S*S.    S*S    S%S  
-            S*S     S*S   SSSbs  S*S    S&S   SS_sSSS   SSSbs  S*S    S&S  
-            SSS     S*S    YSSP  S*S    SSS    Y~YSSY    YSSP  S*S    SSS  
-                    SP           SP                            SP          
-                    Y            Y                             Y           
-"
-
-displayBanner(){
-    echo -e "\e[36m$banner\e[0m"
-}
-
-# Function to log messages (both terminal & file)
-log() {
-    echo -e "$(date +"%Y-%m-%d %H:%M:%S") - $1"
-}
-
-# Function to log errors in red
-log_error() {
-    echo -e "\e[31m$(date +"%Y-%m-%d %H:%M:%S") - ERROR: $1\e[0m" >&2
-}
-
-# Function to log success in green
-log_success() {
-    echo -e "\e[32m$(date +"%Y-%m-%d %H:%M:%S") - SUCCESS: $1\e[0m"
-}
-
-# Function to display usage
-usage() {
-    scriptName=$(basename "$0")
-    log "Usage:"
-    log "  $scriptName -from <source_branch> -to <target_branch>          # Merge in current repo"
-    log "  $scriptName -a -from <source_branch> -to <target_branch>      # Merge in all repos in current directory"
-    log "  $scriptName -a -from <source_branch> -to <target_branch> -ex dir1,dir2  # Exclude specific directories"
-    exit 1
-}
+source mylogger.sh
+source filehandler.sh
 
 # Function to check if a branch exists locally
 branch_exists_locally() {
@@ -209,6 +151,8 @@ apply_all=false
 from_branch=""
 to_branch=""
 exclude_dirs=()
+file=""
+isFileProvided=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -216,30 +160,55 @@ while [[ $# -gt 0 ]]; do
         -from) from_branch="$2"; shift ;;
         -to) to_branch="$2"; shift ;;
         -ex) IFS=',' read -r -a exclude_dirs <<< "$2"; shift ;;
+        -f) isFileProvided=true && file="$2" && extract_branches_from_file "$2"; shift ;;
         -h|--help) usage ;;
         *) log "Invalid argument: $1\n"; usage;;
     esac
     shift
 done
 
+if [[ "$isFileProvided" == "true" && ( "$apply_all" == "true" || -n "$from_branch" || -n "$to_branch" ) ]]; then
+    usage
+fi
+
 # Ensure required arguments are provided
-if [[ -z "$from_branch" || -z "$to_branch" ]]; then
+if [[ -z "$file" ]] && ([[ -z "$from_branch" ]] || [[ -z "$to_branch" ]]); then
+    usage
+elif [[ -n "$file" ]] && ([[ -n "$from_branch" ]] || [[ -n "$to_branch" ]]); then
     usage
 fi
 
 log "Starting automerge process..."
-log "From: $from_branch | To: $to_branch | Apply to all: $apply_all | Excluded: ${exclude_dirs[*]}"
+log "From: $from_branch | To: $to_branch | Apply to all: $apply_all | Reading From File: $isFileProvided | Excluded: ${exclude_dirs[*]}"
 
-if [[ "$apply_all" = true ]]; then
+if [[ "$apply_all" == "true" ]]; then
     # Detect all Git repositories in the current directory
     for repo in */; do
         repoName=$(basename "$repo")
-        if is_excluded $repoName; then
+        if is_excluded "$repoName"; then
             log "Skipping excluded directory: $repoName"
             continue
         fi
         if [ -d "$repo/.git" ]; then
             merge_branch "$repo" "$from_branch" "$to_branch"
+        else
+            log "Skipping non-Git directory: $repoName"
+        fi
+    done
+elif [[ "$isFileProvided" == "true" ]]; then
+    for i in "${!repos_from_file[@]}"; do
+        repoPath=${repos_from_file[$i]}
+        repoName=$(basename "$repoPath")
+        if is_excluded "$repoName"; then
+            log "Skipping excluded directory: $repoName"
+            continue
+        fi
+
+        from_branch=$(echo "${source_branches_from_file[$i]}" | xargs)
+        to_branch=$(echo "${target_branches_from_file[$i]}" | xargs)
+        
+        if [ -d "$repoPath/.git" ]; then
+            merge_branch "$repoPath" "$from_branch" "$to_branch"
         else
             log "Skipping non-Git directory: $repoName"
         fi
