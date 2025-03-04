@@ -44,7 +44,7 @@ ensure_branch_exists() {
 
 # Function to check if there are uncommitted changes
 needs_stash() {
-    if [[ -n $(git status --porcelain) ]]; then
+    if [[ -n $(git status --porcelain | grep -Ev '^\?\? ') ]]; then
         return 0  # Yes, changes need to be stashed
     fi
     return 1  # No, working directory is clean
